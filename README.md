@@ -12,6 +12,13 @@ CLI tool that builds and explores a knowledge graph in **Neo4j AuraDB**. So far 
 2. **Interactive explorer** — After startup, a menu lets you:
    - **Find nodes by name** — Case-insensitive substring search (default if you press Enter)
    - **Find neighbors of a node** — Given an ID like `P1`, lists connected nodes and relationship types
+   - **BFS traversal** — Visit order from a start node up to a max depth (default 2)
+   - **DFS traversal** — Same as BFS but depth-first visit order
+   - **Cypher path queries** — Separate submenu for Cypher-native path work:
+     - Immediate neighbors via `MATCH`
+     - Distinct nodes within N hops (`[*1..N]`)
+     - Paths between two entities (hop-bounded, capped at 20)
+     - `shortestPath` compared to Python BFS
    - **Exit**
 
 ## Project layout
@@ -19,7 +26,8 @@ CLI tool that builds and explores a knowledge graph in **Neo4j AuraDB**. So far 
 | Path | Role |
 |------|------|
 | `main.py` | CLI entrypoint (`--generate` + explorer loop) |
-| `graph_explorer.py` | Neo4j queries for name search and neighbors |
+| `graph_explorer.py` | Neo4j queries for name search, neighbors, BFS/DFS, BFS shortest path |
+| `path_queries.py` | Cypher path-query workflow (neighbors, N-hop, paths, shortestPath vs BFS) |
 | `data/dataset_generator.py` | Mock graph generation + import |
 | `constants.py` | Loads Neo4j settings from `.env` |
 | `.env.example` | Template for required env vars |
@@ -67,4 +75,4 @@ python main.py --generate
 python main.py
 ```
 
-In the explorer menu, choose `1` to search by name, `2` to inspect neighbors by node ID (`P0`, `C0`, `PR0`, …), or `3` to quit.
+In the explorer menu, choose `1` to search by name, `2` to inspect neighbors by node ID (`P0`, `C0`, `PR0`, …), `3`/`4` for BFS/DFS visit order with a depth limit, `5` for Cypher path queries, or `6` to quit.

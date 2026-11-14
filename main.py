@@ -1,6 +1,52 @@
 import argparse
 from data.dataset_generator import generate_graph
 from graph_explorer import GraphExplorer
+from path_queries import run_path_query_menu
+
+
+def prompt_max_depth(default=2):
+    raw = input(f"Enter max depth (default {default}): ").strip()
+    if not raw:
+        return default
+    try:
+        depth = int(raw)
+    except ValueError:
+        print("Max depth must be an integer.")
+        return None
+    if depth < 0:
+        print("Max depth must be non-negative.")
+        return None
+    return depth
+
+
+def print_visit_order(label, start_id, max_depth, results):
+    if not results:
+        print("No nodes found (or start node doesn't exist).")
+        return
+
+    print(f"\n{label} from {start_id} (max depth {max_depth}):")
+    print("-" * 60)
+    for row in results:
+        indent = "  " * row["depth"]
+        print(f"{indent}depth={row['depth']}  {row['id']} - {row['name']}")
+
+
+def run_traversal(explorer, algorithm):
+    node_id = input("\nEnter start node ID (e.g. P0, C0, PR0): ").strip()
+    if not node_id:
+        return
+
+    max_depth = prompt_max_depth()
+    if max_depth is None:
+        return
+
+    if algorithm == "bfs":
+        results = explorer.bfs(node_id, max_depth)
+        print_visit_order("BFS visit order", node_id, max_depth, results)
+    else:
+        results = explorer.dfs(node_id, max_depth)
+        print_visit_order("DFS visit order", node_id, max_depth, results)
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -16,8 +62,8 @@ def main():
         print("Generating mock employee relationship dataset in Neo4j...\n")
         generate_graph()
         print("Mock employee relationship dataset generated successfully!\n")
-    
-    # Explore the graph data 
+
+    # Explore the graph data
     explorer = GraphExplorer()
     try:
         while True:
@@ -26,7 +72,10 @@ def main():
                 "Select a workflow:\n"
                 "1) Find nodes by name (Default)\n"
                 "2) Find neighbors of a node\n"
-                "3) Exit\n\n"
+                "3) BFS traversal\n"
+                "4) DFS traversal\n"
+                "5) Cypher path queries\n"
+                "6) Exit\n\n"
                 "Select a number to select a workflow: "
             ).strip() or "1"
 
@@ -70,6 +119,12 @@ def main():
                         f"{name} ({neighbor_id})"
                     )
             elif workflow_decision == "3":
+                run_traversal(explorer, "bfs")
+            elif workflow_decision == "4":
+                run_traversal(explorer, "dfs")
+            elif workflow_decision == "5":
+                run_path_query_menu(explorer)
+            elif workflow_decision == "6":
                 print("Exiting...")
                 break
     finally:
